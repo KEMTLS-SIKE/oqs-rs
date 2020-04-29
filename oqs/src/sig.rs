@@ -128,6 +128,7 @@ implement_sigs! {
     Picnic2L5Fs: OQS_SIG_alg_picnic2_L5_FS,
     QTeslaPI: OQS_SIG_alg_qTesla_p_I,
     QTeslaPIII: OQS_SIG_alg_qTesla_p_III,
+    Gemss128: OQS_SIG_alg_gemss_128,
 }
 
 impl std::default::Default for Algorithm {
