@@ -366,6 +366,27 @@ impl Kem {
         Ok((pk, sk))
     }
 
+    /// Generate a new keypair
+    pub fn keypair_async(&self) -> Result<(PublicKey, SecretKey)> {
+        let kem = unsafe { self.kem.as_ref() };
+        let func = kem.keypair_async.unwrap();
+        let mut pk = PublicKey {
+            bytes: Vec::with_capacity(kem.length_public_key),
+        };
+        let mut sk = SecretKey {
+            bytes: Vec::with_capacity(kem.length_secret_key),
+        };
+        let status = unsafe { func(pk.bytes.as_mut_ptr(), sk.bytes.as_mut_ptr()) };
+        status_to_result(status)?;
+        // update the lengths of the vecs
+        // this is safe to do, as we have initialised them now.
+        unsafe {
+            pk.bytes.set_len(kem.length_public_key);
+            sk.bytes.set_len(kem.length_secret_key);
+        }
+        Ok((pk, sk))
+    }
+
     /// Encapsulate to the provided public key
     pub fn encapsulate<'a, P: Into<PublicKeyRef<'a>>>(
         &self,
