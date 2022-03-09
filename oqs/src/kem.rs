@@ -345,6 +345,26 @@ impl Kem {
         }
     }
 
+    /// Initialize the KEM
+    pub fn init(&self) -> Result<()> {
+        let kem = unsafe { self.kem.as_ref() };
+        let func = kem.init.unwrap();
+        let status = unsafe { func() };
+        status_to_result(status)?;
+
+        Ok(())
+    }
+
+    /// Uninitialize the KEM
+    pub fn deinit(&self) -> Result<()> {
+        let kem = unsafe { self.kem.as_ref() };
+        let func = kem.deinit.unwrap();
+        let status = unsafe { func() };
+        status_to_result(status)?;
+
+        Ok(())
+    }
+
     /// Generate a new keypair
     pub fn keypair(&self) -> Result<(PublicKey, SecretKey)> {
         let kem = unsafe { self.kem.as_ref() };
