@@ -1,0 +1,8 @@
+[package]
+name = "test-oqs-rs"
+version = "0.1.0"
+authors = ["LHD"]
+edition = "2021"
+
+[dependencies]
+oqs = { path = "../oqs" }
