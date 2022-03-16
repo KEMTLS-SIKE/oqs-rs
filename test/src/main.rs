@@ -20,7 +20,7 @@ fn main() -> Result<()> {
     let elapsed = start.elapsed();
     println!("Millis: {} ms", elapsed.as_millis());
 
-    oqs::deinit();
+    oqs::sike_deinit();
 
     Ok(())
 }
