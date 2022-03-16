@@ -6,7 +6,7 @@ fn main() -> Result<()> {
 
     // A -> B: kem_pk
     let start = Instant::now();
-    let _res = kemalg.init().ok()?;
+    kemalg.init()?;
     let elapsed = start.elapsed();
     println!("Millis: {} ms", elapsed.as_millis());
 
@@ -19,6 +19,8 @@ fn main() -> Result<()> {
     }
     let elapsed = start.elapsed();
     println!("Millis: {} ms", elapsed.as_millis());
+
+    oqs::deinit();
 
     Ok(())
 }
