@@ -442,6 +442,14 @@ impl Kem {
         Ok((ct, ss))
     }
 
+    /// Encapsulate to the provided public key
+    pub fn async_encapsulate<'a, P: Into<PublicKeyRef<'a>>>(
+        &self,
+        pk: P,
+    ) -> Result<(Ciphertext, SharedSecret)> {
+        return self.encapsulate(pk);
+    }
+
     /// Decapsulate the provided ciphertext
     pub fn decapsulate<'a, 'b, S: Into<SecretKeyRef<'a>>, C: Into<CiphertextRef<'b>>>(
         &self,
