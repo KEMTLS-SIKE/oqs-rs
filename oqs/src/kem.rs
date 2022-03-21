@@ -442,12 +442,39 @@ impl Kem {
         Ok((ct, ss))
     }
 
-    /// Encapsulate to the provided public key
+    /// Async encapsulate to the provided public key
     pub fn async_encapsulate<'a, P: Into<PublicKeyRef<'a>>>(
         &self,
         pk: P,
     ) -> Result<(Ciphertext, SharedSecret)> {
-        return self.encapsulate(pk);
+        let pk = pk.into();
+        if pk.bytes.len() != self.length_public_key() {
+            return Err(Error::InvalidLength);
+        }
+        let kem = unsafe { self.kem.as_ref() };
+        let func = kem.async_encaps.unwrap();
+        let mut ct = Ciphertext {
+            bytes: Vec::with_capacity(kem.length_ciphertext),
+        };
+        let mut ss = SharedSecret {
+            bytes: Vec::with_capacity(kem.length_shared_secret),
+        };
+        // call encapsulate
+        let status = unsafe {
+            func(
+                ct.bytes.as_mut_ptr(),
+                ss.bytes.as_mut_ptr(),
+                pk.bytes.as_ptr(),
+            )
+        };
+        status_to_result(status)?;
+        // update the lengths of the vecs
+        // this is safe to do, as we have initialised them now.
+        unsafe {
+            ct.bytes.set_len(kem.length_ciphertext);
+            ss.bytes.set_len(kem.length_shared_secret);
+        }
+        Ok((ct, ss))
     }
 
     /// Decapsulate the provided ciphertext
