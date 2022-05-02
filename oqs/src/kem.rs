@@ -174,6 +174,10 @@ implement_kems! {
     ("sike") SikeP503Compressed: OQS_KEM_alg_sike_p503_compressed,
     ("sike") SikeP610Compressed: OQS_KEM_alg_sike_p610_compressed,
     ("sike") SikeP751Compressed: OQS_KEM_alg_sike_p751_compressed,
+    ("sike") SikeP434Compressed1CCA: OQS_KEM_alg_sike_p434_1cca_compressed,
+    ("sike") SikeP503Compressed1CCA: OQS_KEM_alg_sike_p503_1cca_compressed,
+    ("sike") SikeP610Compressed1CCA: OQS_KEM_alg_sike_p610_1cca_compressed,
+    ("sike") SikeP751Compressed1CCA: OQS_KEM_alg_sike_p751_1cca_compressed,
 }
 
 impl Algorithm {
