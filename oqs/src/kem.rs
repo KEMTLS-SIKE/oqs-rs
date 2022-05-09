@@ -22,6 +22,7 @@ newtype_buffer!(PublicKey, PublicKeyRef);
 newtype_buffer!(SecretKey, SecretKeyRef);
 newtype_buffer!(Ciphertext, CiphertextRef);
 newtype_buffer!(SharedSecret, SharedSecretRef);
+newtype_buffer!(EphemeralSecret, EphemeralSecretRef);
 
 macro_rules! implement_kems {
     { $(($feat: literal) $kem: ident: $oqs_id: ident),* $(,)? } => (
@@ -479,6 +480,89 @@ impl Kem {
             ss.bytes.set_len(kem.length_shared_secret);
         }
         Ok((ct, ss))
+    }
+
+
+    /// Encapsulate to the provided public key
+    pub fn encapsulate_ciphertext<'a, P: Into<PublicKeyRef<'a>>>(
+        &self,
+        pk: P,
+    ) -> Result<(Ciphertext, EphemeralSecret)> {
+        let pk = pk.into();
+        if pk.bytes.len() != self.length_public_key() {
+            return Err(Error::InvalidLength);
+        }
+        let kem = unsafe { self.kem.as_ref() };
+        let func = kem.encaps_ciphertext.unwrap();
+        let mut ct = Ciphertext {
+            bytes: Vec::with_capacity(kem.length_ciphertext),
+        };
+        let mut es = EphemeralSecret {
+            bytes: Vec::with_capacity(kem.length_ephemeral_secret),
+        };
+        // call encapsulate
+        let status = unsafe {
+            func(
+                ct.bytes.as_mut_ptr(),
+                es.bytes.as_mut_ptr(),
+                pk.bytes.as_ptr(),
+            )
+        };
+        status_to_result(status)?;
+        // update the lengths of the vecs
+        // this is safe to do, as we have initialised them now.
+        unsafe {
+            ct.bytes.set_len(kem.length_ciphertext);
+            es.bytes.set_len(kem.length_ephemeral_secret);
+        }
+        Ok((ct, es))
+    }
+
+    pub fn encapsulate_shared_secret<'a, 
+        P: Into<PublicKeyRef<'a>>,
+        C: Into<CiphertextRef<'a>>,
+        E: Into<EphemeralSecretRef<'a>>,
+    >(
+        &self,
+        ct: C,
+        es: E,
+        pk: P,
+    ) -> Result<SharedSecret> {
+        let pk = pk.into();
+        if pk.bytes.len() != self.length_public_key() {
+            return Err(Error::InvalidLength);
+        }
+        let kem = unsafe { self.kem.as_ref() };
+
+        let ct = ct.into();
+        if ct.bytes.len() != kem.length_ciphertext {
+            return Err(Error::InvalidLength);
+        }
+        let es = es.into();
+        if es.bytes.len() != kem.length_ephemeral_secret {
+            return Err(Error::InvalidLength);
+        }
+
+        let func = kem.encaps_shared_secret.unwrap();
+        let mut ss = SharedSecret {
+            bytes: Vec::with_capacity(kem.length_shared_secret),
+        };
+        // call encapsulate
+        let status = unsafe {
+            func(
+                ss.bytes.as_mut_ptr(),
+                ct.bytes.as_ptr(),
+                es.bytes.as_ptr(),
+                pk.bytes.as_ptr(),
+            )
+        };
+        status_to_result(status)?;
+        // update the lengths of the vecs
+        // this is safe to do, as we have initialised them now.
+        unsafe {
+            ss.bytes.set_len(kem.length_shared_secret);
+        }
+        Ok(ss)
     }
 
     /// Decapsulate the provided ciphertext
