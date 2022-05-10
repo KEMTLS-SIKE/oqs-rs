@@ -306,6 +306,12 @@ impl Kem {
         kem.length_shared_secret
     }
 
+    /// Get the length of a shared secret
+    pub fn length_ephemeral_secret(&self) -> usize {
+        let kem = unsafe { self.kem.as_ref() };
+        kem.length_ephemeral_secret
+    }
+
     /// Obtain a secret key objects from bytes
     ///
     /// Returns None if the secret key is not the correct length.
@@ -347,6 +353,17 @@ impl Kem {
             None
         } else {
             Some(SharedSecretRef::new(buf))
+        }
+    }
+
+    /// Obtain a secret key from bytes
+    ///
+    /// Returns None if the shared secret is not the correct length.
+    pub fn ephemeral_secret_from_bytes<'a>(&self, buf: &'a [u8]) -> Option<EphemeralSecretRef<'a>> {
+        if self.length_ephemeral_secret() != buf.len() {
+            None
+        } else {
+            Some(EphemeralSecretRef::new(buf))
         }
     }
 
