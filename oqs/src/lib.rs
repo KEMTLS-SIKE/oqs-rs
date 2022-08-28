@@ -79,8 +79,8 @@ pub fn init() {
 /// Deinitialize liboqs
 ///
 /// Needs to be called after all calls to oqs. It is thread safe.
-pub fn sike_deinit() {
-    unsafe { ffi::kem::OQS_KEM_sike_deinit() };
+pub fn kem_deinit() {
+    unsafe { ffi::kem::OQS_KEM_deinit() };
 }
 
 #[derive(Debug)]

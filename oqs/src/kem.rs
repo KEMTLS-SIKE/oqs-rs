@@ -371,9 +371,7 @@ impl Kem {
 
     /// Initialize the KEM
     pub fn init(&self) -> Result<()> {
-        let kem = unsafe { self.kem.as_ref() };
-        let func = kem.init.unwrap();
-        let status = unsafe { func() };
+        let status = unsafe { ffi::OQS_KEM_init(self.kem.as_ptr()) };
         status_to_result(status)?;
 
         Ok(())
@@ -381,9 +379,7 @@ impl Kem {
 
     /// Uninitialize the KEM
     pub fn deinit(&self) -> Result<()> {
-        let kem = unsafe { self.kem.as_ref() };
-        let func = kem.deinit.unwrap();
-        let status = unsafe { func() };
+        let status = unsafe { ffi::OQS_KEM_deinit() };
         status_to_result(status)?;
 
         Ok(())
@@ -413,14 +409,13 @@ impl Kem {
     /// Generate a new keypair
     pub fn keypair_async(&self) -> Result<(PublicKey, SecretKey)> {
         let kem = unsafe { self.kem.as_ref() };
-        let func = kem.keypair_async.unwrap();
         let mut pk = PublicKey {
             bytes: Vec::with_capacity(kem.length_public_key),
         };
         let mut sk = SecretKey {
             bytes: Vec::with_capacity(kem.length_secret_key),
         };
-        let status = unsafe { func(pk.bytes.as_mut_ptr(), sk.bytes.as_mut_ptr()) };
+        let status = unsafe { ffi::OQS_KEM_async_keypair(self.kem.as_ptr(), pk.bytes.as_mut_ptr(), sk.bytes.as_mut_ptr()) };
         status_to_result(status)?;
         // update the lengths of the vecs
         // this is safe to do, as we have initialised them now.
@@ -502,29 +497,21 @@ impl Kem {
     }
 
 
-    /// Encapsulate to the provided public key
-    pub fn encapsulate_ciphertext<'a, P: Into<PublicKeyRef<'a>>>(
-        &self,
-        pk: P,
-    ) -> Result<(Ciphertext, EphemeralSecret)> {
-        let pk = pk.into();
-        if pk.bytes.len() != self.length_public_key() {
-            return Err(Error::InvalidLength);
-        }
+    /// Encapsulate ciphertext
+    pub fn encapsulate_ciphertext(&self) -> Result<(Ciphertext, EphemeralSecret)> {
         let kem = unsafe { self.kem.as_ref() };
-        let func = kem.encaps_ciphertext.unwrap();
         let mut ct = Ciphertext {
             bytes: Vec::with_capacity(kem.length_ciphertext),
         };
         let mut es = EphemeralSecret {
             bytes: Vec::with_capacity(kem.length_ephemeral_secret),
         };
-        // call encapsulate
+        // call encapsulate_ciphertext
         let status = unsafe {
-            func(
+            ffi::OQS_KEM_encaps_ciphertext(
+                self.kem.as_ptr(),
                 ct.bytes.as_mut_ptr(),
                 es.bytes.as_mut_ptr(),
-                pk.bytes.as_ptr(),
             )
         };
         status_to_result(status)?;
