@@ -186,7 +186,7 @@ implement_kems! {
     ("sike") SikeP610Compressed1CCA: OQS_KEM_alg_sike_p610_1cca_compressed,
     ("sike") SikeP751Compressed1CCA: OQS_KEM_alg_sike_p751_1cca_compressed,
     ("csidh") CsidhP512: OQS_KEM_alg_csidh_p512,
-
+    ("csidh") CsidhP1024: OQS_KEM_alg_csidh_p1024,
 }
 
 impl Algorithm {
